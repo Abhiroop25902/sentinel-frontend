@@ -3,7 +3,7 @@ import Graph from "./components/Graph";
 import Logs from "./components/Logs";
 import Header from "./components/Header";
 import KPI from "./components/KPI";
-import {subscribeToLoginHistory} from "./firebase/firestore/LoginHistorySubcription";
+import {subscribeToLoginHistory} from "./firebase/firestore/LoginHistorySubscription";
 
 
 const App: Component = () => {
