@@ -13,6 +13,8 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.13",
     "solid-devtools": "^0.34.3",
+    "stylelint": "^17.3.0",
+    "stylelint-config-standard": "^40.0.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
     "vite": "^7.1.4",
