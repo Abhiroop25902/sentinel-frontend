@@ -1,1 +1,16 @@
 @import 'tailwindcss';
+
+/* Add this to your global.css */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 16px; /* Width of the vertical scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent; /* Makes the track blend into your div */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #475569; /* slate-600 */
+    border-radius: 20px; /* Round edges */
+    border: 2px solid #1e293b; /* slate-800 padding to make it look 'inset' */
+}
