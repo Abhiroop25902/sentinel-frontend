@@ -36,3 +36,14 @@ export function subscribeToLoginHistory() {
         }
     );
 }
+
+// setInterval(() => {
+//     setStore("logs", log => [
+//         ...log,
+//         {
+//             timestamp: Timestamp.now(),
+//             email: `abhiroop.m25902@gmail.com`,
+//             success: Math.random() > 0.1,
+//         }
+//     ])
+// }, 0)
