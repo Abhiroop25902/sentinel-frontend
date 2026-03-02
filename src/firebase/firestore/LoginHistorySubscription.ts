@@ -26,10 +26,15 @@ export function subscribeToLoginHistory() {
 
                 if (change.type === 'added') {
                     const newLoginHistoryLogData = change.doc.data() as LoginHistoryLog;
-                    setStore("logs", log => [
-                        ...log,
-                        newLoginHistoryLogData
-                    ])
+                    setStore("logs", log => {
+                        const nextState = [
+                            ...log,
+                            newLoginHistoryLogData
+                        ]
+
+                        if (nextState.length > 1000) return nextState.slice(-1000);
+                        return nextState;
+                    })
                 }
 
             })
@@ -38,13 +43,17 @@ export function subscribeToLoginHistory() {
 }
 
 // setInterval(() => {
-//     setTimeout(() => setStore("logs", log => [
-//         ...log,
-//         {
-//             timestamp: Timestamp.now(),
-//             email: `abhiroop.m25902@gmail.com`,
-//             success: Math.random() > Math.random(),
+//     setTimeout(() => setStore("logs", log => {
+//             const nextState = [
+//                 ...log,
+//                 {
+//                     timestamp: Timestamp.now(),
+//                     email: `abhiroop.m25902@gmail.com`,
+//                     success: Math.random() > Math.random(),
+//                 }
+//             ]
+//             if (nextState.length > 1000) return nextState.slice(-1000);
+//             return nextState;
 //         }
-//     ]), Math.random() * 1000);
-//
+//     ), Math.random() * 1000);
 // }, 0)
