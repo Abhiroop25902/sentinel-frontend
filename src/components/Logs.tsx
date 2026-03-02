@@ -1,6 +1,7 @@
 import {createVirtualizer} from "@tanstack/solid-virtual";
 import {createEffect, For, Show} from "solid-js";
 import {store} from "../store";
+import {formatDate} from "../utils/utils";
 
 export default function Logs() {
     let scrollElementRef;
@@ -59,8 +60,8 @@ export default function Logs() {
                                     }}>
                                     <Show when={log()}>
                                         <div class={`flex gap-2 h-6`}>
-                                            <div class={"text-teal-200 w-48"}>
-                                                {log().timestamp.toDate().toISOString()}
+                                            <div class={"text-teal-200"}>
+                                                {formatDate(log().timestamp.toDate())}
                                             </div>
                                             <div class={`grow`}>{log().email}</div>
                                             <div class={`${log().success ? "text-emerald-500" : 'text-rose-500'}`}>
