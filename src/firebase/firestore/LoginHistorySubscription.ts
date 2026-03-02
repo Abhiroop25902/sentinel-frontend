@@ -38,12 +38,13 @@ export function subscribeToLoginHistory() {
 }
 
 // setInterval(() => {
-//     setStore("logs", log => [
+//     setTimeout(() => setStore("logs", log => [
 //         ...log,
 //         {
 //             timestamp: Timestamp.now(),
 //             email: `abhiroop.m25902@gmail.com`,
-//             success: Math.random() > 0.1,
+//             success: Math.random() > Math.random(),
 //         }
-//     ])
+//     ]), Math.random() * 1000);
+//
 // }, 0)
