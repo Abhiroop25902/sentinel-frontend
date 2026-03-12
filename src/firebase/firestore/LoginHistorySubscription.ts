@@ -1,4 +1,4 @@
-import {collection, limit, onSnapshot, orderBy, query, Timestamp, where} from "firebase/firestore";
+import {collection, onSnapshot, orderBy, query, Timestamp, where} from "firebase/firestore";
 import {db} from "../FirebaseApp";
 import FirestoreConstants from "./FirestoreConstants";
 import {setStore} from "../../store";
@@ -10,33 +10,28 @@ export function subscribeToLoginHistory() {
     const loginHistoryCollection = collection(db, FirestoreConstants.LOGIN_HISTORY.ID);
 
     const startTime = Timestamp.now();
-    const newRecordQuery = query(
+    const recordQuery = query(
         loginHistoryCollection,
         where(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, ">", startTime),
-        orderBy(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, "desc"),
-        limit(1)
+        orderBy(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, "asc")
     )
 
     return onSnapshot(
-        newRecordQuery,
+        recordQuery,
         (querySnap) => {
-            querySnap.docChanges().forEach((change) => {
-                // when a record adds into the db, the new record gets added into local view while
-                // the old record gets deleted from the local view, hence both add and delete will come
+            //there might be 1000+ news docs coming from snapshot, collect them and then add them to store
+            const newLoginHistoryLogs = querySnap.docChanges()
+                .filter(change => change.type == 'added')
+                .map(change => change.doc.data() as LoginHistoryLog)
 
-                if (change.type === 'added') {
-                    const newLoginHistoryLogData = change.doc.data() as LoginHistoryLog;
-                    setStore("logs", log => {
-                        const nextState = [
-                            ...log,
-                            newLoginHistoryLogData
-                        ]
+            setStore("logs", log => {
+                const nextState = [
+                    ...log,
+                    ...newLoginHistoryLogs
+                ]
 
-                        if (nextState.length > 1000) return nextState.slice(-1000);
-                        return nextState;
-                    })
-                }
-
+                if (nextState.length > 1000) return nextState.slice(-1000);
+                return nextState;
             })
         }
     );
