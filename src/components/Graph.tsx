@@ -1,4 +1,4 @@
-import {setStore, store} from "../store";
+import {setStore} from "../store";
 import {createSignal, onCleanup} from "solid-js";
 import {LineChart} from "./SolidUIChart/charts";
 import {formatDate} from "../utils/utils";
@@ -22,14 +22,19 @@ export default function Graph() {
 
     const timer = setInterval(() => {
         // making separate variable cause store change will happen before setStore callback happens
-        const lastSecondSuccessCount = store.lastSecondCount.success;
-        const lastSecondFailCount = store.lastSecondCount.fail
+        let lastSecondSuccessCount = 0;
+        let lastSecondFailCount = 0;
+
+        // setStore executes callback synchronously, also as js is single threaded,
+        // only this callback will be executed at this time
+        setStore("lastSecondCount", (prev) => {
+            lastSecondSuccessCount = prev.success;
+            lastSecondFailCount = prev.fail;
+            return {success: 0, fail: 0}; // In this context, resetting to 0 is safe because prev is the absolute current state
+        });
         setSuccessHistory([...successHistory().slice(1), lastSecondSuccessCount]);
         setFailHistory([...failHistory().slice(1), lastSecondFailCount]);
         setTimeLabel([...timeLabel().slice(1), formatDate(new Date())])
-
-        setStore("lastSecondCount", "success", num => num - lastSecondSuccessCount);
-        setStore("lastSecondCount", "fail", num => num - lastSecondFailCount);
     }, 1000);
 
     onCleanup(() => clearInterval(timer));
