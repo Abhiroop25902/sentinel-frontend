@@ -2,8 +2,6 @@ import {createStore} from "solid-js/store";
 import {createEffect} from "solid-js";
 import {LoginHistoryLog} from "./types/LoginHistoryLog";
 
-let nextIdxToProcess = 0;
-
 export const [store, setStore] = createStore({
     loginCount: {
         success: 0,
@@ -17,25 +15,24 @@ export const [store, setStore] = createStore({
 })
 
 createEffect(() => {
-    if (nextIdxToProcess == store.logs.length) return;
+    if (store.logs.length > 0) {
+        const latestLog = store.logs[store.logs.length - 1];
 
-    let successCountForUpdate = 0;
-    let failCountForUpdate = 0;
+        if (latestLog.success)
+            setStore("loginCount", "success", count => count + 1);
+        else
+            setStore("loginCount", "fail", count => count + 1);
 
-    while (nextIdxToProcess <= store.logs.length - 1) {
-        const log = store.logs[nextIdxToProcess];
-
-        if (log.success) successCountForUpdate++;
-        else failCountForUpdate++;
-
-        nextIdxToProcess++;
     }
+})
 
-    setStore("loginCount", "success", count => count + successCountForUpdate);
-    setStore("loginCount", "fail", count => count + failCountForUpdate);
+createEffect(() => {
+    if (store.loginCount.success > 0)
+        setStore("lastSecondCount", "success", count => count + 1);
+});
 
-    setStore('lastSecondCount', 'success', count => count + successCountForUpdate);
-    setStore('lastSecondCount', 'fail', count => count + failCountForUpdate);
-
+createEffect(() => {
+    if (store.loginCount.fail > 0)
+        setStore("lastSecondCount", "fail", count => count + 1);
 });
 
