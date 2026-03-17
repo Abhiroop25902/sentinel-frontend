@@ -19,7 +19,7 @@ export function subscribeToLoginHistory() {
     return onSnapshot(
         loginHistoryQuery,
         (querySnap) => {
-            querySnap.docChanges().forEach((change) => {
+            querySnap.docChanges().forEach(async (change) => {
                 // when a record adds into the db, the new record gets added into local view while
                 // the old record gets deleted from the local view, hence both add and delete will come
 
@@ -34,6 +34,8 @@ export function subscribeToLoginHistory() {
                         if (nextState.length > 1000) return nextState.slice(-1000);
                         return nextState;
                     })
+
+                    await new Promise(resolve => setTimeout(resolve, 0));
                 }
 
             })
