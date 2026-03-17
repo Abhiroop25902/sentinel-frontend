@@ -1,4 +1,4 @@
-import {collection, limit, onSnapshot, orderBy, query, Timestamp, where} from "firebase/firestore";
+import {collection, onSnapshot, orderBy, query, Timestamp, where} from "firebase/firestore";
 import {db} from "../FirebaseApp";
 import FirestoreConstants from "./FirestoreConstants";
 import {setStore} from "../../store";
@@ -10,15 +10,14 @@ export function subscribeToLoginHistory() {
     const loginHistoryCollection = collection(db, FirestoreConstants.LOGIN_HISTORY.ID);
 
     const startTime = Timestamp.now();
-    const newRecordQuery = query(
+    const loginHistoryQuery = query(
         loginHistoryCollection,
         where(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, ">", startTime),
         orderBy(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, "desc"),
-        limit(1)
     )
 
     return onSnapshot(
-        newRecordQuery,
+        loginHistoryQuery,
         (querySnap) => {
             querySnap.docChanges().forEach((change) => {
                 // when a record adds into the db, the new record gets added into local view while
