@@ -1,69 +1,25 @@
-import {collection, onSnapshot, orderBy, query, Timestamp, where} from "firebase/firestore";
-import {db} from "../FirebaseApp";
-import FirestoreConstants from "./FirestoreConstants";
 import {setStore} from "../../store";
-import {LoginHistoryLog} from "../../types/LoginHistoryLog";
 
 export function subscribeToLoginHistory() {
-    console.info("Subscribing to login history");
+    const worker = new Worker(new URL("./LoginHistorySubscription.worker.ts", import.meta.url), {type: "module"});
 
-    const loginHistoryCollection = collection(db, FirestoreConstants.LOGIN_HISTORY.ID);
-
-    const startTime = Timestamp.now();
-    const loginHistoryQuery = query(
-        loginHistoryCollection,
-        where(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, ">", startTime),
-        orderBy(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, "desc"),
-    )
-
-    const localCache: LoginHistoryLog[] = [];
-
-    setInterval(() => {
-        if (localCache.length > 0) {
-            localCache.forEach(newLoginHistoryLogData => {
-                setStore("logs", log => {
-                    const nextState = [
-                        ...log,
-                        newLoginHistoryLogData
-                    ]
-
-                    if (nextState.length > 1000) return nextState.slice(-1000);
-                    return nextState;
-                })
-            });
-            localCache.length = 0;
-        }
-    }, 500)
-
-    return onSnapshot(
-        loginHistoryQuery,
-        (querySnap) => {
-            querySnap.docChanges().forEach(async (change) => {
-                // when a record adds into the db, the new record gets added into local view while
-                // the old record gets deleted from the local view, hence both add and delete will come
-
-                if (change.type === 'added') {
-                    const newLoginHistoryLogData = change.doc.data() as LoginHistoryLog;
-                    localCache.push(newLoginHistoryLogData);
+    worker.onmessage = (message) => {
+        const {batchSuccessCount, batchFailureCount} = message.data;
+        setStore(store => {
+            return {
+                loginCount: {
+                    success: store.loginCount.success + batchSuccessCount,
+                    fail: store.loginCount.fail + batchFailureCount,
+                },
+                lastSecondCount: {
+                    success: store.lastSecondCount.success + batchSuccessCount,
+                    fail: store.lastSecondCount.fail + batchFailureCount,
                 }
+            }
+        });
+    }
 
-            })
-        }
-    );
+    worker.postMessage("INIT");
+
+    console.info("Subscribing to login history");
 }
-
-// setInterval(() => {
-//     setTimeout(() => setStore("logs", log => {
-//             const nextState = [
-//                 ...log,
-//                 {
-//                     timestamp: Timestamp.now(),
-//                     email: `abhiroop.m25902@gmail.com`,
-//                     success: Math.random() > Math.random(),
-//                 }
-//             ]
-//             if (nextState.length > 1000) return nextState.slice(-1000);
-//             return nextState;
-//         }
-//     ), Math.random() * 1000);
-// }, 0)
