@@ -1,36 +1,45 @@
-## Usage
+# 🛡️ Sentinel
 
-Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
+Sentinel is a high-frequency real-time monitoring dashboard built with SolidJS and Firebase.
 
-This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
+## The Origin Story
 
-```bash
-$ npm install # or pnpm install or yarn install
-```
+What started as a random YouTube recommendation about SolidJS turned into a deep dive into high-throughput data
+architectures. I asked Gemini for a project idea to test SolidJS's reactivity, and Sentinel was born.
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+## The Challenge: Scaling to $\gamma = 10,000$
 
-## Available Scripts
+The original concept was simple: click a button, generate $\gamma = 300$ Firestore documents, and watch the dashboard
+update. But things got interesting when I pushed the limit to 10,000 documents (clamped to protect my credit card from
+the Firebase free-tier limits).
 
-In the project directory, you can run:
+### Problem 1: Backend Meltdown
 
-### `npm run dev` or `npm start`
+A single backend instance couldn't handle the burst of 10k writes in a single request.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- The Fix: Decoupled the architecture. The backend now pushes to Pub/Sub, and a dedicated Ingestor Service consumes the
+  messages at an optimal pace to handle the Firestore writes.
 
-The page will reload if you make edits.<br>
+### Problem 2: Frontend "Jank"
 
-### `npm run build`
+Even with the backend fixed, the frontend began to hang. Processing 10k Firestore record changes in the browser's main
+thread locked the UI, dropping frames and killing responsiveness.
 
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
+- The Fix: Implemented Web Workers. By moving the Firestore subscription and data parsing into a background thread, the
+  UI stays a buttery-smooth 60fps while the worker handles the heavy lifting.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+# Tech Stack
 
-## Deployment
+- Frontend: SolidJS (for fine-grained reactivity)
 
-You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
+- Frontend Background Processing: Web Workers (to prevent Main Thread blocking)
 
-## This project was created with the [Solid CLI](https://github.com/solidjs-community/solid-cli)
+- Backend: Java Spring Boot
+    - https://github.com/Abhiroop25902/chatapp-backend
+    - https://github.com/Abhiroop25902/sentinel-ingestor
+
+- Infrastructure: Google Cloud Pub/Sub & Cloud Run
+
+- Database: Cloud Firestore
+
+![img.png](img.png)
