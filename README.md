@@ -2,45 +2,49 @@
 
 Sentinel is a high-frequency real-time monitoring dashboard built with SolidJS and Firebase.
 
-## The Origin Story
+## 📖 The Story
 
-What started as a random YouTube recommendation about SolidJS turned into a deep dive into high-throughput data
-architectures. I asked Gemini for a project idea to test SolidJS's reactivity, and Sentinel was born.
+This project started with a random YouTube recommendation about SolidJS. I wanted to test its "fine-grained reactivity"
+by building a dashboard that handles more than just a few updates per second. I asked Gemini for a challenge, and it led
+me to build a system that monitors high-frequency login events.
 
-## The Challenge: Scaling to $\gamma = 10,000$
+## 🚀 The $\gamma = 10,000$ Challenge
 
-The original concept was simple: click a button, generate $\gamma = 300$ Firestore documents, and watch the dashboard
-update. But things got interesting when I pushed the limit to 10,000 documents (clamped to protect my credit card from
-the Firebase free-tier limits).
+The original "v1" was a simple POST request to generate 300 documents. But to truly test the system, I pushed the limit
+to 10,000 documents (the "Wallet Protection Limit"). This immediately broke the entire stack and forced a complete
+re-architecture.
 
-### Problem 1: Backend Meltdown
+### 🔴 Problem 1: Backend & Database Meltdown
 
-A single backend instance couldn't handle the burst of 10k writes in a single request.
+Firing 10k writes in a single synchronous request destroyed the backend and hit Firestore limits too aggressively.
 
-- The Fix: Decoupled the architecture. The backend now pushes to Pub/Sub, and a dedicated Ingestor Service consumes the
-  messages at an optimal pace to handle the Firestore writes.
+- **The Evolution**: I decoupled the architecture. The backend now offloads data to **Google Cloud Pub/Sub**. A
+  dedicated
+  **Ingestor Service** consumes these messages and throttles the writes to Firestore to stay within free-tier quotas
+  while
+  maintaining high throughput.
 
-### Problem 2: Frontend "Jank"
+### 🔴 Problem 2: Frontend "Jank" & Main Thread Locking
 
-Even with the backend fixed, the frontend began to hang. Processing 10k Firestore record changes in the browser's main
-thread locked the UI, dropping frames and killing responsiveness.
+Even with the data flowing, the browser couldn't keep up. Processing 10,000 onSnapshot changes locked the UI thread,
+making the dashboard unresponsive and frozen.
 
-- The Fix: Implemented Web Workers. By moving the Firestore subscription and data parsing into a background thread, the
-  UI stays a buttery-smooth 60fps while the worker handles the heavy lifting.
+- **The Evolution**: I implemented **Web Workers**. By moving the entire Firestore subscription and data parsing logic
+  into a
+  background thread, the "Main Thread" stays 100% free for the UI
+- **The Result**: The dashboard stays silky-smooth even while processing thousands of logs per second.
 
-# Tech Stack
+# 🛠️ Tech Stack
 
-- Frontend: SolidJS (for fine-grained reactivity)
-
-- Frontend Background Processing: Web Workers (to prevent Main Thread blocking)
-
-- Backend: Java Spring Boot
+- **Frontend**: SolidJS (for fine-grained reactivity)
+- **Concurrency**: Web Workers (Multithreading in the browser)
+- **Styling**: Tailwind CSS (Dark Mode optimized)
+- **Backend**: Java Spring Boot
     - https://github.com/Abhiroop25902/chatapp-backend
     - https://github.com/Abhiroop25902/sentinel-ingestor
 
-- Infrastructure: Google Cloud Pub/Sub, Cloud Run, Firestore Server Configs (for controlling saveToDb, printLog and
+- **Infrastructure**: Google Cloud Pub/Sub, Cloud Run, Firestore Server Configs (for controlling saveToDb, printLog and
   recordCount)
-
-- Database: Cloud Firestore
+- **Database**: Cloud Firestore
 
 ![img.png](img.png)
