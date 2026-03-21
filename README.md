@@ -38,7 +38,8 @@ thread locked the UI, dropping frames and killing responsiveness.
     - https://github.com/Abhiroop25902/chatapp-backend
     - https://github.com/Abhiroop25902/sentinel-ingestor
 
-- Infrastructure: Google Cloud Pub/Sub & Cloud Run
+- Infrastructure: Google Cloud Pub/Sub, Cloud Run, Firestore Server Configs (for controlling saveToDb, printLog and
+  recordCount)
 
 - Database: Cloud Firestore
 
