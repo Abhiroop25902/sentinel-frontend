@@ -16,6 +16,25 @@ export function subscribeToLoginHistory() {
         orderBy(FirestoreConstants.LOGIN_HISTORY.FIELDS.TIMESTAMP, "desc"),
     )
 
+    const localCache: LoginHistoryLog[] = [];
+
+    setInterval(() => {
+        if (localCache.length > 0) {
+            localCache.forEach(newLoginHistoryLogData => {
+                setStore("logs", log => {
+                    const nextState = [
+                        ...log,
+                        newLoginHistoryLogData
+                    ]
+
+                    if (nextState.length > 1000) return nextState.slice(-1000);
+                    return nextState;
+                })
+            });
+            localCache.length = 0;
+        }
+    }, 500)
+
     return onSnapshot(
         loginHistoryQuery,
         (querySnap) => {
@@ -25,17 +44,7 @@ export function subscribeToLoginHistory() {
 
                 if (change.type === 'added') {
                     const newLoginHistoryLogData = change.doc.data() as LoginHistoryLog;
-                    setStore("logs", log => {
-                        const nextState = [
-                            ...log,
-                            newLoginHistoryLogData
-                        ]
-
-                        if (nextState.length > 1000) return nextState.slice(-1000);
-                        return nextState;
-                    })
-
-                    await new Promise(resolve => setTimeout(resolve, 0));
+                    localCache.push(newLoginHistoryLogData);
                 }
 
             })
