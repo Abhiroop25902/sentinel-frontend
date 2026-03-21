@@ -40,7 +40,7 @@ making the dashboard unresponsive and frozen.
 - **Concurrency**: Web Workers (Multithreading in the browser)
 - **Styling**: Tailwind CSS (Dark Mode optimized)
 - **Backend**: Java Spring Boot
-    - https://github.com/Abhiroop25902/chatapp-backend
+    - https://github.com/Abhiroop25902/sentinel-backend
     - https://github.com/Abhiroop25902/sentinel-ingestor
 
 - **Infrastructure**: Google Cloud Pub/Sub, Cloud Run, Firestore Server Configs (for controlling saveToDb, printLog and
