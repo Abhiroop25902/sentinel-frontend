@@ -2,6 +2,11 @@ import {collection, onSnapshot, query, Timestamp, where} from "firebase/firestor
 import FirestoreConstants from "./FirestoreConstants";
 import {db} from "../FirebaseApp";
 import {LoginHistoryLog} from "../../types/LoginHistoryLog";
+import firebase from "firebase/compat/app";
+import Unsubscribe = firebase.Unsubscribe;
+
+let interval: NodeJS.Timeout;
+let unsubscribe: Unsubscribe;
 
 
 self.onmessage = (e) => {
@@ -16,7 +21,7 @@ self.onmessage = (e) => {
         let batchSuccessCount = 0;
         let batchFailureCount = 0;
 
-        setInterval(() => {
+        interval = setInterval(() => {
             if (batchSuccessCount > 0 || batchFailureCount > 0) {
                 self.postMessage({batchSuccessCount, batchFailureCount});
                 batchSuccessCount = 0;
@@ -25,7 +30,7 @@ self.onmessage = (e) => {
         }, 1000);
 
 
-        onSnapshot(
+        unsubscribe = onSnapshot(
             loginHistoryQuery,
             querySnap => {
                 querySnap.docChanges()
@@ -40,6 +45,19 @@ self.onmessage = (e) => {
                     });
             }
         );
+
+    }
+
+    if (e.data === "STOP") {
+        if (interval) {
+            clearInterval(interval);
+        }
+
+        if (unsubscribe) {
+            unsubscribe();
+        }
+
+        console.info("Worker: Firestore unsubscribed and interval cleared.");
 
     }
 
