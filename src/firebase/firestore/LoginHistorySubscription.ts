@@ -19,7 +19,7 @@ export function subscribeToLoginHistory() {
         });
     }
 
-    worker.postMessage("INIT");
+    worker.postMessage(WebWorkerConstants.START);
 
     console.info("Subscribing to login history");
 }
