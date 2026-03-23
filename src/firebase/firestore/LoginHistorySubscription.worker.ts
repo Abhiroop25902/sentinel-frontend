@@ -3,6 +3,7 @@ import FirestoreConstants from "./FirestoreConstants";
 import {db} from "../FirebaseApp";
 import {LoginHistoryLog} from "../../types/LoginHistoryLog";
 import firebase from "firebase/compat/app";
+import WebWorkerConstants from "../../constants/WebWorkerConstants";
 import Unsubscribe = firebase.Unsubscribe;
 
 let interval: NodeJS.Timeout;
@@ -10,7 +11,7 @@ let unsubscribe: Unsubscribe;
 
 
 self.onmessage = (e) => {
-    if (e.data === "INIT") {
+    if (e.data === WebWorkerConstants.START) {
         const loginHistoryCollection = collection(db, FirestoreConstants.LOGIN_HISTORY.ID);
 
         const startTime = Timestamp.now();
@@ -48,7 +49,7 @@ self.onmessage = (e) => {
 
     }
 
-    if (e.data === "STOP") {
+    if (e.data === WebWorkerConstants.STOP) {
         if (interval) {
             clearInterval(interval);
         }
